@@ -1,0 +1,87 @@
+#Enviando os dados para o HDFS
+
+Descompactar os arquivos na maquina,
+docker cp /home/bruno/Downloads/Proj_Final jupyter-spark:/home
+docker exec -it jupyter-spark bash
+hdfs dfs -put /home/Proj_Final /user/bruno/data
+
+
+#Otimizando os dados para uma tabela hive
+
+Criando uma tabela sem particionamento para coleta dos dados
+
+create table covid (
+	regiao string,
+	estado string,
+	municipio string,
+	codUf int,
+	codMun int,
+	codRegiaoSaude int,
+	nomeRegiaoSaude string,
+	data string,
+	semanaEpi int,
+	populacaoTCU2019 int,
+	casosAcumulados int,
+	casosNovos int,
+	obitosAcumulados int,
+	obitosNovos int,
+	recuperadosNovos int,
+	emAcompanhamentoNovos int,
+	interiorMetropolitana string
+	)
+row format delimited
+fields terminated by ';'
+lines terminated by '\n'
+stored as textfile
+location '/user/warehouse/bruno/covid'
+
+Alimentando a tabela com os arquivos csv
+
+load data inpath '/user/bruno/data/HIST_PAINEL_COVIDBR_2020_Parte1_06jul2021.csv' into table covid;
+load data inpath '/user/bruno/data/HIST_PAINEL_COVIDBR_2020_Parte2_06jul2021.csv' into table covid;
+load data inpath '/user/bruno/data/HIST_PAINEL_COVIDBR_2021_Parte1_06jul2021.csv' into table covid;
+load data inpath '/user/bruno/data/HIST_PAINEL_COVIDBR_2021_Parte2_06jul2021.csv' into table covid;
+
+Criando a tabela particionada
+
+create table covidParticionada (
+	regiao string,
+	estado string,
+	codUf int,
+	codMun int,
+	codRegiaoSaude int,
+	nomeRegiaoSaude string,
+	data string,
+	semanaEpi int,
+	populacaoTCU2019 int,
+	casosAcumulados int,
+	casosNovos int,
+	obitosAcumulados int,
+	obitosNovos int,
+	recuperadosNovos int,
+	emAcompanhamentoNovos int,
+	interiorMetropolitana string
+	)
+partitioned by (municipio string)
+location '/user/warehouse/bruno/covidParticionada/';
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
