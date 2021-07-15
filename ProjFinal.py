@@ -58,13 +58,21 @@ view_rec_acom = rec_acom.agg(sum("emAcompanhamentoNovos").alias("em_Acompanhamen
 # In[9]:
 
 
+#selecionando os dados para criar a segunda view
 casos_inci = sqlContext.sql("select casosAcumulados, casosNovos, populacaoTCU2019 from covidParticionada")
 
 
-# In[10]:
+# In[28]:
 
 
-casos_inci.agg(sum("casosAcumulados").alias("Acumulado"), sum("casosNovos").alias("Casos Novos"))
+#tratando os dados da segunda view
+view_casos_ini = casos_inci.agg(sum("casosAcumulados").alias("Acumulado"), sum("casosNovos").alias("Casos_Novos"), variance("casosNovos").alias("Incidencia"))
+
+
+# In[29]:
+
+
+view_casos_ini.show()
 
 
 # In[22]:
@@ -72,4 +80,17 @@ casos_inci.agg(sum("casosAcumulados").alias("Acumulado"), sum("casosNovos").alia
 
 #primeira view salva como tabela Hive.
 view_rec_acom.write.saveAsTable("view_rec_acom")
+
+
+# In[30]:
+
+
+#segunda view salva como arquivo parquet com compressao snappy
+view_casos_ini.write.parquet("/user/bruno/data/view_casos_ini",compression="snappy")
+
+
+# In[31]:
+
+
+get_ipython().system('hdfs dfs -ls /user/bruno/data/view_casos_ini')
 
